@@ -4,23 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public abstract class BaseSchema {
+public abstract class BaseSchema<T> {
     private final List<Predicate<Object>> checks = new ArrayList<>();
 
-    public boolean isValid(Object objIn) {
+    protected void addChecks(Predicate<Object> check) {
+        checks.add(check);
+    }
 
-        for (Predicate<Object> predicate : this.checks) {
-            if (!predicate.test(objIn)) {
+    public BaseSchema<T> required() {
+        return this;
+    }
+
+    public boolean isValid(Object value) {
+        for (Predicate<Object> check : checks) {
+            if (!check.test(value)) {
                 return false;
             }
         }
         return true;
     }
-
-    public abstract BaseSchema required();
-
-
-    protected void addChecks(Predicate<Object> predicate) {
-        this.checks.add(predicate);
-    }
 }
+
+
+

@@ -20,7 +20,7 @@ public class MapSchemaNestedTest {
 
         MapSchema schema = v.map();
 
-        Map<String, BaseSchema> schemas = new HashMap<>();
+        Map<String, BaseSchema<?>> schemas = new HashMap<>();
         schemas.put("name", v.string().required());
         schemas.put("age", v.number().positive());
         schema.shape(schemas);
