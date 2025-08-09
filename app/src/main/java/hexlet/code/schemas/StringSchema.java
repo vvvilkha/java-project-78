@@ -1,6 +1,6 @@
 package hexlet.code.schemas;
 
-public final class StringSchema extends BaseSchema{
+public final class StringSchema extends BaseSchema {
 
     @Override
     public StringSchema required() {
@@ -20,3 +20,4 @@ public final class StringSchema extends BaseSchema{
         return this;
     }
 }
+
