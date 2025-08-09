@@ -4,9 +4,8 @@ public final class StringSchema extends BaseSchema<String> {
 
     @Override
     public StringSchema required() {
-        super.required(); // запретит null
-        // плюс требуем непустую строку
-        addChecks(x -> x instanceof String && !((String) x).trim().isEmpty());
+        super.required();
+        addChecks(x -> x instanceof String && !((String) x).isEmpty());
         return this;
     }
 
@@ -23,7 +22,7 @@ public final class StringSchema extends BaseSchema<String> {
             }
             String s = (String) x;
             if (!isRequired() && s.isEmpty()) {
-                return true; // пустая строка ок до required()
+                return true;
             }
             return s.contains(sub);
         });
@@ -40,13 +39,14 @@ public final class StringSchema extends BaseSchema<String> {
             }
             String s = (String) x;
             if (!isRequired() && s.isEmpty()) {
-                return true; // пустая строка ок до required()
+                return true;
             }
-            return s.trim().length() >= len;
+            return s.length() >= len;
         });
         return this;
     }
 }
+
 
 
 
