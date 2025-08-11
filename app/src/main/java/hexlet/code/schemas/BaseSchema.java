@@ -32,5 +32,3 @@ public abstract class BaseSchema<T> {
     }
 }
 
-
-

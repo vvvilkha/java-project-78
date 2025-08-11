@@ -4,7 +4,8 @@ public final class NumberSchema extends BaseSchema<Integer> {
 
     @Override
     public NumberSchema required() {
-        addChecks(x -> x instanceof Integer);
+        super.required(); // запрещаем null
+        addChecks(x -> x instanceof Integer); // и требуем тип Integer
         return this;
     }
 
@@ -14,7 +15,8 @@ public final class NumberSchema extends BaseSchema<Integer> {
     }
 
     public NumberSchema range(int from, int to) {
-        addChecks(x -> x == null || (x instanceof Integer && (Integer) x >= from && (Integer) x <= to));
+        addChecks(x -> x == null || (x instanceof Integer
+                && (Integer) x >= from && (Integer) x <= to));
         return this;
     }
 }
