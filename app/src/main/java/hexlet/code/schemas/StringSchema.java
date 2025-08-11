@@ -41,11 +41,12 @@ public final class StringSchema extends BaseSchema<String> {
             if (!isRequired() && s.isEmpty()) {
                 return true;
             }
-            return s.length() >= len;
+            return s.length() >= len; // без trim
         });
         return this;
     }
 }
+
 
 
 

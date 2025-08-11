@@ -33,8 +33,8 @@ public class StringSchemaTest {
         Validator v = new Validator();
         StringSchema schema = v.string();
         schema.required();
-        assertTrue(schema.contains("what").isValid("what does the fox say")); // true
-        assertFalse(schema.contains("whatthe").isValid("what does the fox say")); // false
+        assertTrue(schema.contains("what").isValid("what does the fox say"));
+        assertFalse(schema.contains("whatthe").isValid("what does the fox say"));
     }
 
     @Test
@@ -42,9 +42,10 @@ public class StringSchemaTest {
         Validator v = new Validator();
         StringSchema schema = v.string();
         schema.required();
-        assertTrue(schema.minLength(2).isValid("fo")); // true
-        assertFalse(schema.minLength(FIVE).isValid("what")); // false
+        assertTrue(schema.minLength(2).isValid("fo"));
+        assertFalse(schema.minLength(FIVE).isValid("what"));
     }
 }
+
 
 
