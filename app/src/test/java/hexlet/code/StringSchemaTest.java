@@ -2,48 +2,50 @@ package hexlet.code;
 
 import hexlet.code.schemas.StringSchema;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringSchemaTest {
-    static final int FIVE = 5;
+
     @Test
-    public void testNoParam() {
-        Validator v = new Validator();
-        StringSchema schema = v.string();
+    void testNullAndEmptyBeforeRequired() {
+        StringSchema schema = new StringSchema();
         assertTrue(schema.isValid(null));
+        assertTrue(schema.isValid(""));
     }
 
     @Test
-    public void testRequired() {
-        Validator v = new Validator();
-        StringSchema schema = v.string();
-
-        schema.required();
-
-        assertTrue(schema.isValid("what does the fox say"));
-        assertFalse(schema.isValid(""));
+    void testRequiredBlocksNullAndEmpty() {
+        StringSchema schema = new StringSchema().required();
         assertFalse(schema.isValid(null));
-
+        assertFalse(schema.isValid(""));
+        assertTrue(schema.isValid("a"));
     }
 
     @Test
-    public void testContains() {
-        Validator v = new Validator();
-        StringSchema schema = v.string();
+    void testContainsBeforeAndAfterRequired() {
+        StringSchema schema = new StringSchema().contains("lo");
+        assertTrue(schema.isValid("hello"));
+        assertTrue(schema.isValid(""));
+        assertFalse(schema.isValid(123));
+
         schema.required();
-        assertTrue(schema.contains("what").isValid("what does the fox say"));
-        assertFalse(schema.contains("whatthe").isValid("what does the fox say"));
+        assertFalse(schema.isValid(""));
+        assertTrue(schema.isValid("yellow"));
+        assertFalse(schema.isValid("red"));
     }
 
     @Test
-    public void testMinLength() {
-        Validator v = new Validator();
-        StringSchema schema = v.string();
+    void testMinLength() {
+        StringSchema schema = new StringSchema().minLength(3);
+        assertTrue(schema.isValid("abc"));
+        assertFalse(schema.isValid("ab"));
+        assertTrue(schema.isValid(""));
+
         schema.required();
-        assertTrue(schema.minLength(2).isValid("fo"));
-        assertFalse(schema.minLength(FIVE).isValid("what"));
+        assertFalse(schema.isValid(""));
+        assertFalse(schema.isValid("ab"));
+        assertTrue(schema.isValid("abcd"));
     }
 }
 
