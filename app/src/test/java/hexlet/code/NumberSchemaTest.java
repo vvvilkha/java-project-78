@@ -1,56 +1,65 @@
 package hexlet.code;
 
 import hexlet.code.schemas.NumberSchema;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NumberSchemaTest {
-    static final int TEN = 10;
-    static final int FIVE = 5;
+class NumberSchemaTest {
+    private NumberSchema schema;
+
+    @BeforeEach
+    void setSchema() {
+        var validator = new Validator();
+        schema = validator.number();
+    }
 
     @Test
-    public void testNoParam() {
-        Validator v = new Validator();
-        NumberSchema schema = v.number();
+    void testDefault() {
         assertTrue(schema.isValid(null));
+        assertTrue(schema.isValid(0));
+        assertTrue(schema.isValid(-1));
+        assertTrue(schema.isValid(1));
     }
 
     @Test
-    public void testRequired() {
-        Validator v = new Validator();
-        NumberSchema schema = v.number();
-
+    void testRequired() {
         schema.required();
-
-        assertTrue(schema.isValid(TEN));
-        assertFalse(schema.isValid("5"));
         assertFalse(schema.isValid(null));
-
+        assertTrue(schema.isValid(0));
+        assertTrue(schema.isValid(-1));
+        assertTrue(schema.isValid(1));
     }
 
     @Test
-    public void testPositive() {
-        Validator v = new Validator();
-        NumberSchema schema = v.number();
-        assertTrue(schema.positive().isValid(TEN)); // true
-        assertFalse(schema.isValid(-TEN)); // false
-        assertTrue(schema.positive().isValid(null)); // true
+    void testPositive() {
+        schema.positive();
+        assertTrue(schema.isValid(null));
+        assertFalse(schema.isValid(0));
+        assertFalse(schema.isValid(-1));
+        assertTrue(schema.isValid(1));
     }
 
     @Test
-    public void testRange() {
-        Validator v = new Validator();
-        NumberSchema schema = v.number();
-        schema.required();
-        schema.range(FIVE, TEN);
-
-        assertTrue(schema.isValid(FIVE)); // true
-        assertTrue(schema.isValid(TEN)); // true
-        assertFalse(schema.isValid(FIVE - 1)); // false
-        assertFalse(schema.isValid(TEN + 1)); // false
+    void testRange() {
+        schema.range(-1, 3);
+        assertTrue(schema.isValid(null));
+        assertFalse(schema.isValid(-4));
+        assertTrue(schema.isValid(-1));
+        assertTrue(schema.isValid(0));
+        assertTrue(schema.isValid(3));
+        assertFalse(schema.isValid(4));
     }
 
+    @Test
+    void testMixed() {
+        schema.required().positive().range(-1, 3);
+        assertFalse(schema.isValid(null));
+        assertFalse(schema.isValid(0));
+        assertFalse(schema.isValid(-1));
+        assertTrue(schema.isValid(1));
+        assertFalse(schema.isValid(4));
+    }
 }
-

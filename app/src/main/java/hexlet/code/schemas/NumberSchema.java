@@ -1,22 +1,24 @@
 package hexlet.code.schemas;
 
+import java.util.Objects;
+
 public final class NumberSchema extends BaseSchema<Integer> {
 
-    @Override
     public NumberSchema required() {
-        super.required(); // запрещаем null
-        addChecks(x -> x instanceof Integer); // и требуем тип Integer
+        addCheck("required", Objects::nonNull);
+
         return this;
     }
 
     public NumberSchema positive() {
-        addChecks(x -> x == null || (x instanceof Integer && (Integer) x > 0));
+        addCheck("positive", num -> num >= 1);
+
         return this;
     }
 
-    public NumberSchema range(int from, int to) {
-        addChecks(x -> x == null || (x instanceof Integer
-                && (Integer) x >= from && (Integer) x <= to));
+    public NumberSchema range(int min, int max) {
+        addCheck("range", num -> min <= num && num <= max);
+
         return this;
     }
 }

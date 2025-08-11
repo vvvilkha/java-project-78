@@ -1,37 +1,44 @@
 package hexlet.code.schemas;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
-public final class MapSchema extends BaseSchema<Map<String, Object>> {
+public final class MapSchema extends BaseSchema<Map<?, ?>> {
 
-    @Override
     public MapSchema required() {
-        super.required(); // запрещаем null
-        addChecks(x -> x instanceof Map); // и требуем Map
+        addCheck("required", Objects::nonNull);
+
         return this;
     }
 
-    // По условиям курса обычно нужен ТОЧНЫЙ размер
-    public MapSchema sizeof(int n) {
-        addChecks(x -> x == null || ((Map<?, ?>) x).size() == n);
+    public MapSchema sizeof(int size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size cannot be less than 0");
+        }
+
+        addCheck("sizeof", map -> map.size() == size);
+
         return this;
     }
 
-    public MapSchema shape(Map<String, ? extends BaseSchema<?>> schemas) {
-        addChecks(x -> {
-            if (x == null) {
-                return true; // до required() null валиден
-            }
-            Map<?, ?> map = (Map<?, ?>) x;
-            for (var e : schemas.entrySet()) {
-                Object value = map.get(e.getKey());
-                if (!e.getValue().isValid(value)) {
-                    return false;
-                }
-            }
-            return true;
-        });
+    public <T> MapSchema shape(Map<?, BaseSchema<T>> schemas) {
+        if (schemas == null) {
+            throw new IllegalArgumentException("schemas cannot be null");
+        }
+
+        Predicate<Map<?, ?>> shapeCheck = (map) -> schemas.keySet().stream()
+                .filter(map::containsKey)
+                .allMatch(key -> {
+                    try {
+                        return schemas.get(key).isValid((T) map.get(key));
+                    } catch (ClassCastException | NullPointerException e) {
+                        return false;
+                    }
+                });
+
+        addCheck("shape", shapeCheck);
+
         return this;
     }
 }
-
