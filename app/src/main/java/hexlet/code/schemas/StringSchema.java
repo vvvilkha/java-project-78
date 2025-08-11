@@ -5,7 +5,7 @@ public final class StringSchema extends BaseSchema<String> {
     @Override
     public StringSchema required() {
         super.required(); // запрещаем null
-        // запрещаем только пустую строку (""), пробелы разрешены — без trim()
+        // запрещаем только пустую строку "", пробелы разрешаем — без trim()
         addChecks(x -> x instanceof String && !((String) x).isEmpty());
         return this;
     }
@@ -16,16 +16,17 @@ public final class StringSchema extends BaseSchema<String> {
         }
         addChecks(x -> {
             if (x == null) {
-                return true; // до required() null считается "нет значения"
+                return true;
             }
             if (!(x instanceof String)) {
                 return false;
             }
             String s = (String) x;
-            if (!isRequired() && s.isEmpty()) {
-                return true; // до required() пустая строка валидна
+            // до required() игнорируем и пустую, и пробельную строку
+            if (!isRequired() && s.trim().isEmpty()) {
+                return true;
             }
-            return s.contains(sub); // без trim()
+            return s.contains(sub);
         });
         return this;
     }
@@ -39,10 +40,11 @@ public final class StringSchema extends BaseSchema<String> {
                 return false;
             }
             String s = (String) x;
-            if (!isRequired() && s.isEmpty()) {
-                return true; // до required() пустая строка валидна
+            // до required() игнорируем и пустую, и пробельную строку
+            if (!isRequired() && s.trim().isEmpty()) {
+                return true;
             }
-            return s.length() >= len; // без trim()
+            return s.length() >= len;
         });
         return this;
     }
