@@ -1,6 +1,5 @@
 package hexlet.code;
 
-import hexlet.code.schemas.StringSchema;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
@@ -92,7 +91,7 @@ class StringSchemaTest {
 
     @ParameterizedTest(name = "[contains=\"text\" & minLength=4] value=\"{0}\" ⇒ valid={1}")
     @MethodSource("containsMin4Cases")
-    void containsWithMinLength_initial(String value, boolean expected) {
+    void containsWithMinLengthInitial(String value, boolean expected) {
         var schema = new Validator().string().contains("text").minLength(4);
         assertEquals(expected, schema.isValid(value));
     }
@@ -106,7 +105,7 @@ class StringSchemaTest {
 
     @ParameterizedTest(name = "[contains=\"text\" & minLength=4 → then minLength=5] value=\"{0}\" ⇒ valid={1}")
     @MethodSource("containsMinThenIncreaseCases")
-    void containsWithMinLength_increase(String value, boolean expected) {
+    void containsWithMinLengthIncrease(String value, boolean expected) {
         var schema = new Validator().string().contains("text").minLength(4);
         schema.minLength(5);
         assertEquals(expected, schema.isValid(value));

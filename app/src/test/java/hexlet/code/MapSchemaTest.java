@@ -6,18 +6,19 @@ import org.junit.jupiter.params.provider.NullSource;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class MapSchemaTest {
 
     @ParameterizedTest(name = "[{index}] sizeof={0}, mapSize={1} ⇒ valid={2}")
     @CsvSource({
-            "2, 2, true",
-            "2, 1, false",
-            "2, 3, false"
+        "2, 2, true",
+        "2, 1, false",
+        "2, 3, false"
     })
-    void sizeof_param(int requiredSize, int mapSize, boolean expected) {
+
+    void sizeofParam(int requiredSize, int mapSize, boolean expected) {
         var v = new Validator();
         var schema = v.map().sizeof(requiredSize);
 
@@ -31,7 +32,7 @@ public class MapSchemaTest {
 
     @ParameterizedTest
     @NullSource
-    void required_null_is_invalid(Map<String, Object> data) {
+    void requiredNullIsInvalid(Map<String, Object> data) {
         var v = new Validator();
         var schema = v.map().required();
         assertFalse(schema.isValid(data));
