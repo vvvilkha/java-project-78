@@ -2,64 +2,105 @@ package hexlet.code;
 
 import hexlet.code.schemas.NumberSchema;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.junit.jupiter.params.provider.Arguments;
 
 class NumberSchemaTest {
+
     private NumberSchema schema;
 
     @BeforeEach
-    void setSchema() {
+    void setUp() {
         var validator = new Validator();
         schema = validator.number();
     }
 
-    @Test
-    void testDefault() {
-        assertTrue(schema.isValid(null));
-        assertTrue(schema.isValid(0));
-        assertTrue(schema.isValid(-1));
-        assertTrue(schema.isValid(1));
+    @ParameterizedTest(name = "[default] value={0} ⇒ valid={1}")
+    @MethodSource("defaultCases")
+    void defaultValidation(Integer value, boolean expected) {
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testRequired() {
+    static Stream<Arguments> defaultCases() {
+        return Stream.of(
+                arguments(null, true),
+                arguments(0, true),
+                arguments(-1, true),
+                arguments(1, true)
+        );
+    }
+
+    @ParameterizedTest(name = "[required] value={0} ⇒ valid={1}")
+    @MethodSource("requiredCases")
+    void requiredValidation(Integer value, boolean expected) {
         schema.required();
-        assertFalse(schema.isValid(null));
-        assertTrue(schema.isValid(0));
-        assertTrue(schema.isValid(-1));
-        assertTrue(schema.isValid(1));
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testPositive() {
+    static Stream<Arguments> requiredCases() {
+        return Stream.of(
+                arguments(null, false),
+                arguments(0, true),
+                arguments(-1, true),
+                arguments(1, true)
+        );
+    }
+
+    @ParameterizedTest(name = "[positive] value={0} ⇒ valid={1}")
+    @MethodSource("positiveCases")
+    void positiveValidation(Integer value, boolean expected) {
         schema.positive();
-        assertTrue(schema.isValid(null));
-        assertFalse(schema.isValid(0));
-        assertFalse(schema.isValid(-1));
-        assertTrue(schema.isValid(1));
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testRange() {
+    static Stream<Arguments> positiveCases() {
+        return Stream.of(
+                arguments(null, true),
+                arguments(0, false),
+                arguments(-1, false),
+                arguments(1, true)
+        );
+    }
+
+    @ParameterizedTest(name = "[range -1..3] value={0} ⇒ valid={1}")
+    @MethodSource("rangeCases")
+    void rangeValidation(Integer value, boolean expected) {
         schema.range(-1, 3);
-        assertTrue(schema.isValid(null));
-        assertFalse(schema.isValid(-4));
-        assertTrue(schema.isValid(-1));
-        assertTrue(schema.isValid(0));
-        assertTrue(schema.isValid(3));
-        assertFalse(schema.isValid(4));
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testMixed() {
+    static Stream<Arguments> rangeCases() {
+        return Stream.of(
+                arguments(null, true),
+                arguments(-4, false),
+                arguments(-1, true),
+                arguments(0, true),
+                arguments(3, true),
+                arguments(4, false)
+        );
+    }
+
+    @ParameterizedTest(name = "[mixed required+positive+range] value={0} ⇒ valid={1}")
+    @MethodSource("mixedCases")
+    void mixedValidation(Integer value, boolean expected) {
         schema.required().positive().range(-1, 3);
-        assertFalse(schema.isValid(null));
-        assertFalse(schema.isValid(0));
-        assertFalse(schema.isValid(-1));
-        assertTrue(schema.isValid(1));
-        assertFalse(schema.isValid(4));
+        assertEquals(expected, schema.isValid(value));
+    }
+
+    static Stream<Arguments> mixedCases() {
+        return Stream.of(
+                arguments(null, false),
+                arguments(0, false),
+                arguments(-1, false),
+                arguments(1, true),
+                arguments(4, false)
+        );
     }
 }
+

@@ -1,95 +1,129 @@
 package hexlet.code;
 
 import hexlet.code.schemas.StringSchema;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.provider.Arguments;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StringSchemaTest {
-    private static String emptyString;
-    private static String shortString;
-    private static String longString;
 
-    private static StringSchema schema;
-
-    @BeforeAll
-    static void setFixtures() {
-        emptyString = "";
-        shortString = "text";
-        longString = "another text 123";
+    @ParameterizedTest(name = "[default] value=\"{0}\" ⇒ valid={1}")
+    @MethodSource("defaultCases")
+    void defaultValidation(String value, boolean expected) {
+        var schema = new Validator().string();
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @BeforeEach
-    void setSchema() {
-        var validator = new Validator();
-        schema = validator.string();
+    static Stream<Arguments> defaultCases() {
+        return Stream.of(
+                Arguments.of(null, true),
+                Arguments.of("", true),
+                Arguments.of("text", true)
+        );
     }
 
-    @Test
-    void testDefault() {
-        assertTrue(schema.isValid(null));
-        assertTrue(schema.isValid(emptyString));
-        assertTrue(schema.isValid(shortString));
+    @ParameterizedTest(name = "[required] value=\"{0}\" ⇒ valid={1}")
+    @MethodSource("requiredCases")
+    void requiredValidation(String value, boolean expected) {
+        var schema = new Validator().string().required();
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testRequired() {
-        schema.required();
-        assertFalse(schema.isValid(null));
-        assertFalse(schema.isValid(emptyString));
-        assertTrue(schema.isValid(shortString));
+    static Stream<Arguments> requiredCases() {
+        return Stream.of(
+                Arguments.of(null, false),
+                Arguments.of("", false),
+                Arguments.of("text", true)
+        );
     }
 
-    @Test
-    void testMinLength() {
-        schema.minLength(0);
-        assertTrue(schema.isValid(null));
-        assertTrue(schema.isValid(emptyString));
-        assertTrue(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
+    @ParameterizedTest(name = "[minLength={0}] value=\"{1}\" ⇒ valid={2}")
+    @MethodSource("minLengthCases")
+    void minLengthValidation(int min, String value, boolean expected) {
+        var schema = new Validator().string().minLength(min);
+        assertEquals(expected, schema.isValid(value));
+    }
 
+    static Stream<Arguments> minLengthCases() {
+        return Stream.of(
+                Arguments.of(0, null, true),
+                Arguments.of(0, "", true),
+                Arguments.of(0, "text", true),
+                Arguments.of(0, "another text 123", true),
+
+                Arguments.of(5, null, true),
+                Arguments.of(5, "", false),
+                Arguments.of(5, "text", false),
+                Arguments.of(5, "another text 123", true)
+        );
+    }
+
+    @ParameterizedTest(name = "[contains=\"{0}\"] value=\"{1}\" ⇒ valid={2}")
+    @MethodSource("containsCases")
+    void containsValidation(String needle, String value, boolean expected) {
+        var schema = new Validator().string().contains(needle);
+        assertEquals(expected, schema.isValid(value));
+    }
+
+    static Stream<Arguments> containsCases() {
+        return Stream.of(
+                Arguments.of("", null, true),
+                Arguments.of("", "", true),
+                Arguments.of("", "text", true),
+                Arguments.of("", "another text 123", true),
+
+                Arguments.of("text", null, true),
+                Arguments.of("text", "", false),
+                Arguments.of("text", "text", true),
+                Arguments.of("text", "another text 123", true),
+
+                Arguments.of(" ", null, true),
+                Arguments.of(" ", "", false),
+                Arguments.of(" ", "text", false),
+                Arguments.of(" ", "another text 123", true)
+        );
+    }
+
+    @ParameterizedTest(name = "[contains=\"text\" & minLength=4] value=\"{0}\" ⇒ valid={1}")
+    @MethodSource("containsMin4Cases")
+    void containsWithMinLength_initial(String value, boolean expected) {
+        var schema = new Validator().string().contains("text").minLength(4);
+        assertEquals(expected, schema.isValid(value));
+    }
+
+    static Stream<Arguments> containsMin4Cases() {
+        return Stream.of(
+                Arguments.of("text", true),
+                Arguments.of("another text 123", true)
+        );
+    }
+
+    @ParameterizedTest(name = "[contains=\"text\" & minLength=4 → then minLength=5] value=\"{0}\" ⇒ valid={1}")
+    @MethodSource("containsMinThenIncreaseCases")
+    void containsWithMinLength_increase(String value, boolean expected) {
+        var schema = new Validator().string().contains("text").minLength(4);
         schema.minLength(5);
-        assertTrue(schema.isValid(null));
-        assertFalse(schema.isValid(emptyString));
-        assertFalse(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
+        assertEquals(expected, schema.isValid(value));
     }
 
-    @Test
-    void testContains() {
-        assertThrows(IllegalArgumentException.class, () -> schema.contains(null));
-
-        schema.contains("");
-        assertTrue(schema.isValid(null));
-        assertTrue(schema.isValid(emptyString));
-        assertTrue(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
-
-        schema.contains("text");
-        assertTrue(schema.isValid(null));
-        assertFalse(schema.isValid(emptyString));
-        assertTrue(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
-
-        schema.contains(" ");
-        assertTrue(schema.isValid(null));
-        assertFalse(schema.isValid(emptyString));
-        assertFalse(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
+    static Stream<Arguments> containsMinThenIncreaseCases() {
+        return Stream.of(
+                Arguments.of("text", false),
+                Arguments.of("another text 123", true)
+        );
     }
 
-    @Test
-    void testContainsWithMinLength() {
-        schema.contains("text").minLength(4);
-        assertTrue(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
-
-        schema.minLength(5);
-        assertFalse(schema.isValid(shortString));
-        assertTrue(schema.isValid(longString));
+    @ParameterizedTest
+    @NullSource
+    void containsNullArgumentThrows(String content) {
+        var schema = new Validator().string();
+        assertThrows(IllegalArgumentException.class, () -> schema.contains(content));
     }
 }
+

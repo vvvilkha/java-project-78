@@ -4,41 +4,44 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public final class MapSchema extends BaseSchema<Map<?, ?>> {
+public final class MapSchema extends BaseSchema<Map<String, Object>> {
 
     public MapSchema required() {
-        addCheck("required", Objects::nonNull);
-
+        addCheck("required", requiredCheck());
         return this;
     }
 
     public MapSchema sizeof(int size) {
-        if (size < 0) {
-            throw new IllegalArgumentException("size cannot be less than 0");
-        }
-
-        addCheck("sizeof", map -> map.size() == size);
-
+        addCheck("sizeof", sizeofCheck(size));
         return this;
     }
 
-    public <T> MapSchema shape(Map<?, BaseSchema<T>> schemas) {
-        if (schemas == null) {
-            throw new IllegalArgumentException("schemas cannot be null");
-        }
-
-        Predicate<Map<?, ?>> shapeCheck = (map) -> schemas.keySet().stream()
-                .filter(map::containsKey)
-                .allMatch(key -> {
-                    try {
-                        return schemas.get(key).isValid((T) map.get(key));
-                    } catch (ClassCastException | NullPointerException e) {
-                        return false;
-                    }
-                });
-
-        addCheck("shape", shapeCheck);
-
+    public MapSchema shape(Map<String, BaseSchema<?>> schemas) {
+        addCheck("shape", shapeCheck(schemas));
         return this;
+    }
+
+    private Predicate<Map<String, Object>> requiredCheck() {
+        return Objects::nonNull;
+    }
+
+    private Predicate<Map<String, Object>> sizeofCheck(int size) {
+        return m -> m.size() == size;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Predicate<Map<String, Object>> shapeCheck(Map<String, BaseSchema<?>> schemas) {
+        return m -> {
+            for (var entry : schemas.entrySet()) {
+                var key = entry.getKey();
+                var schema = (BaseSchema<Object>) entry.getValue();
+                var value = m.get(key);
+                if (!schema.isValid(value)) {
+                    return false;
+                }
+            }
+            return true;
+        };
     }
 }
+
