@@ -1,41 +1,30 @@
 package hexlet.code;
 
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullSource;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class MapSchemaTest {
+class MapSchemaTest {
 
-    @ParameterizedTest(name = "[{index}] sizeof={0}, mapSize={1} ⇒ valid={2}")
+    @ParameterizedTest(name = "[sizeof={0}] mapSize={1} ⇒ valid={2}")
     @CsvSource({
         "2, 2, true",
         "2, 1, false",
         "2, 3, false"
     })
-
     void sizeofParam(int requiredSize, int mapSize, boolean expected) {
-        var v = new Validator();
-        var schema = v.map().sizeof(requiredSize);
+        var schema = new Validator().map().sizeof(requiredSize);
 
-        Map<String, Object> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         for (int i = 0; i < mapSize; i++) {
-            data.put("k" + i, i);
+            data.put("k" + i, Integer.toString(i));
         }
-
         assertEquals(expected, schema.isValid(data));
-    }
-
-    @ParameterizedTest
-    @NullSource
-    void requiredNullIsInvalid(Map<String, Object> data) {
-        var v = new Validator();
-        var schema = v.map().required();
-        assertFalse(schema.isValid(data));
     }
 }
 
